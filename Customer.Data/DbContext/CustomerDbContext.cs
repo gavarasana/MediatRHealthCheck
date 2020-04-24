@@ -1,10 +1,11 @@
 using System.Threading;
 using System.Threading.Tasks;
+using Customer.Data.Extensions;
 using Microsoft.EntityFrameworkCore;
 
-namespace Customer.Data
+namespace Customer.Data.DbContext
 {
-    public class CustomerDbContext : DbContext
+    public class CustomerDbContext :  Microsoft.EntityFrameworkCore.DbContext
     {
         
         public DbSet<Domain.Models.Customer> Customers { get; set; }

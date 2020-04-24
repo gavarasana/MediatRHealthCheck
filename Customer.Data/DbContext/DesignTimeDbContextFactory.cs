@@ -5,10 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
 
-namespace Customer.Data
+namespace Customer.Data.DbContext
 {
     public abstract class DesignTimeDbContextFactory<TContext>
-        : IDesignTimeDbContextFactory<TContext> where TContext : DbContext
+        : IDesignTimeDbContextFactory<TContext> where TContext : Microsoft.EntityFrameworkCore.DbContext
     {
         public TContext CreateDbContext(string[] args)
         {

@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace Customer.Data
+namespace Customer.Data.DbContext
 {
     public class CustomerDbContextFactory : DesignTimeDbContextFactory<CustomerDbContext>
     {
