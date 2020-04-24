@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Customer.Data.DbContext;
 using Customer.Data.IRepositories;
 using Microsoft.EntityFrameworkCore;
 

@@ -1,42 +1,34 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Customer.Data;
+using Customer.Data.DbContext;
 using Customer.Data.IRepositories;
 using Customer.Data.Repositories;
 using Customer.Service.Dxos;
+using Customer.Service.Services;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Swashbuckle.AspNetCore.Swagger;
+using Microsoft.OpenApi.Models;
 
-namespace Customer.API
+namespace Customer.API1
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
+        public Startup(IConfiguration configuration)
         {
-            // Read configuration and combine appsettings.json and appsettings.env.json by environment of deployment
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", false, true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", true)
-                .AddEnvironmentVariables();
-
-            Configuration = builder.Build();
+            Configuration = configuration;
         }
 
         public IConfiguration Configuration { get; }
@@ -44,76 +36,75 @@ namespace Customer.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddRouting(options => options.LowercaseUrls = true);
+            var sqlConnection = Configuration.GetConnectionString("DefaultConnection");
+
             services.AddDbContext<CustomerDbContext>(options =>
-                {
-                    options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
-                        sqlOptions =>
-                        {
-                            sqlOptions.EnableRetryOnFailure(maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(30),
-                                errorNumbersToAdd: null);
-                        });
-                });
-            services.AddSwaggerGen(s =>
             {
-                s.SwaggerDoc("v1", new Info { Title = "Customer API", Version = "v1" });
-                s.DescribeAllParametersInCamelCase();
-                s.DescribeAllEnumsAsStrings();
+                options.UseSqlServer(sqlConnection, optionsBuilder =>
+                {
+                    optionsBuilder.EnableRetryOnFailure(maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(15), 
+                        errorNumbersToAdd: null);
+                });
             });
 
-            //Add DIs
+            services.AddSwaggerGen(s =>
+            {
+                s.SwaggerDoc("v1", new OpenApiInfo { Title = "Customer Api", Version = "v1" });
+                s.DescribeAllParametersInCamelCase();                
+            });
+
+            // Add DIs
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<ICustomerDxos, CustomerDxos>();
 
-            services.AddMediatR();
+            services.AddMediatR(typeof(CreateCustomerHandler).GetTypeInfo().Assembly);
 
             services.AddLogging();
 
+            services.AddControllers();
+
             services.AddHealthChecks()
-                    .AddCheck("SQL Check", () =>
+                .AddCheck("SQL Check", () =>
+                {
+                    using (var connection = new SqlConnection(Configuration.GetConnectionString("DefaultConnection")))
                     {
-                        using (var connection = new SqlConnection(Configuration.GetConnectionString("DefaultConnection")))
+                        try
                         {
-                            try
-                            {
-                                connection.Open();
-                                return HealthCheckResult.Healthy();
-                            }
-                            catch (SqlException)
-                            {
-                                return HealthCheckResult.Unhealthy();
-                            }
+                            connection.Open();
+                            return HealthCheckResult.Healthy();
                         }
-                    });
-
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
-
+                        catch (SqlException)
+                        {
+                            return HealthCheckResult.Unhealthy();
+                        }
+                    }
+                });
 
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            //You may would disable auto migrate if needed
-            //app.UseAutoMigrateDatabase<CustomerDbContext>();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
-            else
-            {
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
 
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
+
+            app.UseRouting();
+
             app.UseSwagger();
             app.UseSwaggerUI(c => { c.SwaggerEndpoint("/swagger/v1/swagger.json", "Customer API V1"); });
-            app.UseMvc();
+
+            app.UseAuthorization();
 
             app.UseHealthChecks("/health");
 
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
     }
 }

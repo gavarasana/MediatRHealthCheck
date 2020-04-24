@@ -4,14 +4,14 @@ using System.Reflection;
 using Customer.Domain.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace Customer.Data
+namespace Customer.Data.Extensions
 {
     public static class Extensions
     {
         /// <summary>
         ///     Auto initialize or update currently date time for any class based on class ModelBase
         /// </summary>
-        public static void AddAuditInfo(this DbContext dbContext)
+        public static void AddAuditInfo(this Microsoft.EntityFrameworkCore.DbContext dbContext)
         {
             var entries = dbContext.ChangeTracker.Entries().Where(e =>
                 e.Entity is ModelBase && (e.State is EntityState.Added || e.State is EntityState.Modified));
@@ -27,7 +27,7 @@ namespace Customer.Data
         ///     Auto find and apply all IEntityTypeConfiguration to modelBuilder
         /// </summary>
         public static void ApplyAllConfigurations<TDbContext>(this ModelBuilder modelBuilder)
-            where TDbContext : DbContext
+            where TDbContext : Microsoft.EntityFrameworkCore.DbContext
         {
             var applyConfigurationMethodInfo = modelBuilder
                 .GetType()
