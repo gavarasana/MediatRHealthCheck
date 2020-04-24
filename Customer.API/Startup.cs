@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -17,6 +18,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.Swagger;
@@ -67,7 +69,22 @@ namespace Customer.API
 
             services.AddLogging();
 
-            services.AddHealthChecks();
+            services.AddHealthChecks()
+                    .AddCheck("SQL Check", () =>
+                    {
+                        using (var connection = new SqlConnection(Configuration.GetConnectionString("DefaultConnection")))
+                        {
+                            try
+                            {
+                                connection.Open();
+                                return HealthCheckResult.Healthy();
+                            }
+                            catch (SqlException)
+                            {
+                                return HealthCheckResult.Unhealthy();
+                            }
+                        }
+                    });
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
@@ -78,7 +95,7 @@ namespace Customer.API
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             //You may would disable auto migrate if needed
-            app.UseAutoMigrateDatabase<CustomerDbContext>();
+            //app.UseAutoMigrateDatabase<CustomerDbContext>();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -96,7 +113,7 @@ namespace Customer.API
             app.UseMvc();
 
             app.UseHealthChecks("/health");
-            
+
         }
     }
 }
