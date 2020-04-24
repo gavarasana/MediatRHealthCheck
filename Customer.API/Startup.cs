@@ -36,11 +36,12 @@ namespace Customer.API1
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var sqlConnection = Configuration.GetConnectionString("DefaultConnection");
+            var customerDbConnection = Configuration.GetConnectionString("CustomerDBConnection");
+            var booksDbConnection = Configuration.GetConnectionString("CustomerDBConnection");
 
             services.AddDbContext<CustomerDbContext>(options =>
             {
-                options.UseSqlServer(sqlConnection, optionsBuilder =>
+                options.UseSqlServer(customerDbConnection, optionsBuilder =>
                 {
                     optionsBuilder.EnableRetryOnFailure(maxRetryCount: 3, maxRetryDelay: TimeSpan.FromSeconds(15), 
                         errorNumbersToAdd: null);
@@ -64,21 +65,8 @@ namespace Customer.API1
             services.AddControllers();
 
             services.AddHealthChecks()
-                .AddCheck("SQL Check", () =>
-                {
-                    using (var connection = new SqlConnection(Configuration.GetConnectionString("DefaultConnection")))
-                    {
-                        try
-                        {
-                            connection.Open();
-                            return HealthCheckResult.Healthy();
-                        }
-                        catch (SqlException)
-                        {
-                            return HealthCheckResult.Unhealthy();
-                        }
-                    }
-                });
+                .AddSqlServer(connectionString: customerDbConnection, name: "Customer DB")
+               .AddSqlServer(connectionString: booksDbConnection, name: "Books DB");
 
         }
 
