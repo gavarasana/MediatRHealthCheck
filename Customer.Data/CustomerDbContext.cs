@@ -15,7 +15,7 @@ namespace Customer.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyAllConfigurations<CustomerDbContext>();
+            //modelBuilder.ApplyAllConfigurations<CustomerDbContext>();
         }
 
         public override int SaveChanges()
