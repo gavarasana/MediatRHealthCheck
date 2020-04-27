@@ -80,6 +80,13 @@ namespace Customer.API1
                     }
                 });
 
+            services.AddHttpClient("OrderService", httpClient =>
+            {
+                httpClient.BaseAddress = new Uri("https://localhost:6001");
+                httpClient.DefaultRequestHeaders.Add("Accept", "application/json");
+                httpClient.DefaultRequestHeaders.Add("Content-Type", "application/json");
+            });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

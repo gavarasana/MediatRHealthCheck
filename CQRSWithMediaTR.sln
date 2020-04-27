@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Customer.Data", "Customer.D
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Customer.API", "Customer.API\Customer.API.csproj", "{AC257164-96E2-489F-A1BA-7F50BF50A526}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orders.API", "Orders.API\Orders.API.csproj", "{2D0BE303-FCB7-4DF9-B6A7-D78D325BDD13}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{AC257164-96E2-489F-A1BA-7F50BF50A526}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AC257164-96E2-489F-A1BA-7F50BF50A526}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AC257164-96E2-489F-A1BA-7F50BF50A526}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D0BE303-FCB7-4DF9-B6A7-D78D325BDD13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D0BE303-FCB7-4DF9-B6A7-D78D325BDD13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D0BE303-FCB7-4DF9-B6A7-D78D325BDD13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D0BE303-FCB7-4DF9-B6A7-D78D325BDD13}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
